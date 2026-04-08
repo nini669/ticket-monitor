@@ -2,23 +2,19 @@ name: Vatican Ticket Monitor
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # 每1分钟运行一次
-  workflow_dispatch:       # 允许你手动运行
+    - cron: '*/5 * * * *'  # 每5分钟查一次
+  workflow_dispatch:
 
 jobs:
-  monitor:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      - name: 安装Python
+      - uses: actions/checkout@v4
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-
-      - name: 安装依赖
+          python-version: '3.11'
+      - name: Install requests
         run: pip install requests
-
-      - name: 运行监控脚本
+      - name: Run monitor
         run: python main.py
