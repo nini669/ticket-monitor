@@ -2,7 +2,7 @@ import requests
 import time
 
 # ===================== 配置 =====================
-VISIT_DATE = "18/04/2026"
+VISIT_DATE = "21/04/2026"
 VISITOR_NUM = 2
 SENDKEY    = "SCT335071T4ymVM8yeqsUYpyVOIZpZFjACJ"
 # ==================================================
