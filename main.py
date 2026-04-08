@@ -2,18 +2,17 @@ import requests
 import time
 
 # ===================== 配置 =====================
-VISIT_DATE = "18/04/2026"
 VISITOR_NUM = 2
-SENDKEY    = "SCT335071T4ymVM8yeqsUYpyVOIZpZFjACJ"
+SENDKEY    = "SCT335071T4mVM8yeqsUYpyVOIZpZFjACJ"
+
+# 监控日期
+MONITOR_DATES = [
+    "18/04/2026",
+    "20/04/2026"
+]
 # ==================================================
 
-# 接口1：获取门票ID
-API_LIST = (
-    "https://tickets.museivaticani.va/api/search/resultPerTag"
-    f"?lang=it&visitorNum={VISITOR_NUM}&visitDate={VISIT_DATE}&area=1&who=&page=0&tag=MV-Biglietti"
-)
-
-# 接口2：查询时段是否可约
+API_LIST = "https://tickets.museivaticani.va/api/search/resultPerTag"
 API_TIME = "https://tickets.museivaticani.va/api/visit/timeavail"
 
 HEADERS = {
@@ -24,54 +23,81 @@ HEADERS = {
 def wechat_notify(title, content):
     try:
         api = f"https://sctapi.ftqq.com/{SENDKEY}.send"
-        requests.post(api, data={"title": title, "desp": content}, timeout=10)
+        requests.post(api, data={"title": title, "desc": content}, timeout=10)
     except:
         pass
 
-def main():
-    try:
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"【{now}】开始检查梵蒂冈门票...")
+# 检查单个日期
+def check_date(VISIT_DATE):
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n==============================================")
+    print(f"[{now}] 正在检查：{VISIT_DATE}")
 
-        # 1. 获取场次ID
-        r1 = requests.get(API_LIST, headers=HEADERS, timeout=15)
+    try:
+        # 1. 获取门票ID
+        params_list = {
+            "lang": "it",
+            "visitorNum": VISITOR_NUM,
+            "visitDate": VISIT_DATE,
+            "area": 1,
+            "who": "",
+            "page": 0,
+            "tag": "MV-Biglietti"
+        }
+        r1 = requests.get(API_LIST, params=params_list, headers=HEADERS, timeout=15)
         data1 = r1.json()
         visits = data1.get("visits", [])
         if not visits:
-            print("无场次信息")
-            return
+            print(f"[{VISIT_DATE}] 无场次")
+            return False
 
         visit_id = visits[0]["id"]
-        print(f"获取门票ID成功: {visit_id}")
+        print(f"[{VISIT_DATE}] 门票ID：{visit_id}")
 
-        # 2. 获取时间段可用性
-        params = {
+        # 2. 获取时段
+        params_time = {
             "lang": "it",
             "visitLang": "",
             "visitTypeId": visit_id,
             "visitorNum": VISITOR_NUM,
             "visitDate": VISIT_DATE
         }
-        r2 = requests.get(API_TIME, params=params, headers=HEADERS, timeout=15)
+        r2 = requests.get(API_TIME, params=params_time, headers=HEADERS, timeout=15)
         data2 = r2.json()
         timetable = data2.get("timetable", [])
 
-        # 打印所有时段结果
-        print("\n==== 各时段状态 ====")
+        # 打印时段（带日期）
+        print(f"[{VISIT_DATE}] 各时段状态：")
         for item in timetable:
-            print(f"{item['time']} -> {item['availability']}")
+            print(f"[{VISIT_DATE}] {item['time']} -> {item['availability']}")
 
-        # 判断：任意时段不是SOLD_OUT就算有票
+        # 判断是否有票
         has_ticket = any(t.get("availability") != "SOLD_OUT" for t in timetable)
-        print(f"\n最终结果：{'有票可预约' if has_ticket else '全部售罄'}")
+        print(f"[{VISIT_DATE}] 最终结果：{'有票可预约' if has_ticket else '全部售罄'}")
 
-        # 有票才发微信（无任何测试消息）
-        if has_ticket:
-            msg = f"✅ 梵蒂冈 {VISIT_DATE} 有票！\n人数：{VISITOR_NUM}\n状态：可预约"
-            wechat_notify("🚨 梵蒂冈门票可预约！", msg)
+        return has_ticket
 
     except Exception as e:
-        print(f"运行错误: {e}")
+        print(f"[{VISIT_DATE}] 错误：{e}")
+        return False
+
+# 主程序
+def main():
+    available_list = []
+    for date in MONITOR_DATES:
+        if check_date(date):
+            available_list.append(date)
+
+    # 微信通知（带具体日期）
+    if available_list:
+        msg = "🚨 梵蒂冈门票可预约！\n"
+        msg += f"人数：{VISITOR_NUM}\n\n"
+        msg += "可预约日期：\n"
+        for d in available_list:
+            msg += f"✅ {d}\n"
+        
+        print(f"\n✅ 有可预约日期：{available_list}，发送微信通知")
+        wechat_notify("🚨 梵蒂冈有票！", msg)
 
 if __name__ == "__main__":
     main()
