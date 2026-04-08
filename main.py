@@ -96,3 +96,9 @@ def main():
 if __name__ == "__main__":
     main()
     # 保持仓库活跃 - 2026-04-08
+# ===================== 自动保持仓库活跃（永不休眠）=====================
+import os
+if os.path.exists("keep_alive.txt"):
+    with open("keep_alive.txt", "w", encoding="utf-8") as f:
+        f.write(time.strftime("%Y-%m-%d %H:%M:%S"))
+# ====================================================================
