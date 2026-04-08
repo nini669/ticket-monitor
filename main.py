@@ -2,7 +2,7 @@ import requests
 import time
 
 # 配置
-VISIT_DATE = "18/04/2026"
+VISIT_DATE = "21/04/2026"
 SENDKEY    = "SCT335071T4mVM8yeqsUYpyVOIZpZFjACJ"
 
 # 梵蒂冈公开API 无需TOKEN
