@@ -4,7 +4,7 @@ import time
 # ===================== 配置 =====================
 VISIT_DATE = "18/04/2026"
 VISITOR_NUM = 2
-SENDKEY    = "SCT335071T4mVM8yeqsUYpyVOIZpZFjACJ"
+SENDKEY    = "SCT335071T4ymVM8yeqsUYpyVOIZpZFjACJ"
 # ==================================================
 
 # 接口1：获取门票ID
@@ -13,11 +13,11 @@ API_LIST = (
     f"?lang=it&visitorNum={VISITOR_NUM}&visitDate={VISIT_DATE}&area=1&who=&page=0&tag=MV-Biglietti"
 )
 
-# 接口2：查询时间段是否可约
+# 接口2：查询时段是否可约
 API_TIME = "https://tickets.museivaticani.va/api/visit/timeavail"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win10; x64) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Referer": "https://tickets.museivaticani.va/"
 }
 
@@ -65,7 +65,7 @@ def main():
         has_ticket = any(t.get("availability") != "SOLD_OUT" for t in timetable)
         print(f"\n最终结果：{'有票可预约' if has_ticket else '全部售罄'}")
 
-        # 有票才发微信
+        # 有票才发微信（无任何测试消息）
         if has_ticket:
             msg = f"✅ 梵蒂冈 {VISIT_DATE} 有票！\n人数：{VISITOR_NUM}\n状态：可预约"
             wechat_notify("🚨 梵蒂冈门票可预约！", msg)
