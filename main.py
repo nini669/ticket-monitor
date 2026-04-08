@@ -46,7 +46,8 @@ def check_date(VISIT_DATE):
         data1 = r1.json()
         visits = data1.get("visits", [])
         if not visits:
-            return VISIT_DATE, "无场次"
+            print(f"[{VISIT_DATE}] 无场次")
+            return False
 
         visit_id = visits[0]["id"]
         print(f"[{VISIT_DATE}] 门票ID：{visit_id}")
@@ -62,6 +63,7 @@ def check_date(VISIT_DATE):
         data2 = r2.json()
         timetable = data2.get("timetable", [])
 
+        # 打印时段
         print(f"[{VISIT_DATE}] 各时段状态：")
         for item in timetable:
             print(f"[{VISIT_DATE}] {item['time']} -> {item['availability']}")
@@ -70,27 +72,26 @@ def check_date(VISIT_DATE):
         result = "有票可预约" if has_ticket else "全部售罄"
         print(f"[{VISIT_DATE}] 最终结果：{result}")
 
-        return VISIT_DATE, result
+        return has_ticket
 
     except Exception as e:
         print(f"[{VISIT_DATE}] 错误：{e}")
-        return VISIT_DATE, "检查出错"
+        return False
 
 def main():
-    beijing_now = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
-    report = f"📊 梵蒂冈门票当前状态（北京时间 {beijing_now}）\n\n"
-
-    status_list = []
+    available_dates = []
     for date in MONITOR_DATES:
-        date_str, res = check_date(date)
-        status_list.append((date_str, res))
+        if check_date(date):
+            available_dates.append(date)
 
-    # ========== 只发这一次 ==========
-    for d, r in status_list:
-        report += f"📅 {d} → {r}\n"
-
-    # wechat_notify("📊 梵蒂冈当前检查结果", report)
-    # ================================
+    # ✅ 只在有票时发微信
+    if available_dates:
+        beijing_now = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
+        msg = f"🚨 梵蒂冈门票可预约！（北京时间 {beijing_now}）\n\n"
+        msg += "可预约日期：\n"
+        for d in available_dates:
+            msg += f"✅ {d}\n"
+        wechat_notify("🚨 梵蒂冈有票！", msg)
 
 if __name__ == "__main__":
     main()
