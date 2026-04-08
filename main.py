@@ -89,7 +89,7 @@ def main():
     for d, r in status_list:
         report += f"📅 {d} → {r}\n"
 
-    wechat_notify("📊 梵蒂冈当前检查结果", report)
+    # wechat_notify("📊 梵蒂冈当前检查结果", report)
     # ================================
 
 if __name__ == "__main__":
