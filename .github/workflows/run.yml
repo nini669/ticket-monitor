@@ -1,29 +1,21 @@
 name: Vatican Ticket Monitor
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/5 * * * *'  # 每5分钟一次
   workflow_dispatch:
-
-permissions:
-  actions: write
-  contents: read
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
-      - name: Keep repo alive (防止休眠)
-        uses: larscom/keep-alive-action@v1.0.0
       - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install requests
+      - name: Install dependencies
         run: pip install requests
       - name: Run monitor
         run: python main.py
