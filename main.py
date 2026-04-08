@@ -48,7 +48,7 @@ def main():
 
         # 核心判断：状态为AVAILABLE就报警
         if status == "AVAILABLE":
-            wechat_notify("🚨 梵蒂冈4月21日门票可预订！", msg)
+            wechat_notify("🚨 梵蒂冈4月18日门票可预订！", msg)
 
     except Exception as e:
         print(f"错误: {e}")
